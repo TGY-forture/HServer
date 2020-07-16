@@ -1,2 +1,0 @@
-# HServer
-Happ server
