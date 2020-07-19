@@ -11,15 +11,26 @@ router.post('/', (req, res, next) => {
     password: 'tgy12345',
     database: 'fac'
   })
-  let sql = `select password from usertab where username=${data.username}`
+  let sql = `select password,islog from usertab where username='${data.username}'`
   connection.query(sql,function(err, result, fields) {
     if (!err) {
-      if (data.password === result[0].password) {
-        res.send('success')
+      if (result.length == 0) {
+        res.send('empty')
+      } else if (result[0].islog == 'active') {
+        res.send('active')
+      } else if (data.password === result[0].password) {
+        sql = `update usertab set islog='active' where username='${data.username}'`
+        connection.query(sql, function (err, result, fields) {
+          if (!err) {
+            res.send('success')
+          }
+        })
       } else {
         res.end('false')
       }
       connection.end()
+    } else {
+      console.log(err)
     }
   })
 })
