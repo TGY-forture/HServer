@@ -8,6 +8,7 @@ var indexRouter = require('./routes/index');
 var signRouter = require('./routes/sign');
 let logRouter = require('./routes/log')
 let searchRouter = require('./routes/search')
+let plusRouter = require('./routes/plus')
 
 var app = express();
 
@@ -25,7 +26,7 @@ app.all('*', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", 'http://localhost:8081');
   res.header("Access-Control-Allow-Headers", "Content-Type,Content-Length, Authorization, Accept,X-Requested-With");
   res.header("Access-Control-Allow-Credentials","true");
-  // res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS,HEAD,CONNECT,PATCH,TRACE");
   // res.header("X-Powered-By",' 3.2.1')
   next();
 })
@@ -34,6 +35,7 @@ app.use('/', indexRouter);
 app.use('/log', logRouter)
 app.use('/sign', signRouter)
 app.use('/search', searchRouter)
+app.use('/plus', plusRouter)
 
 
 // catch 404 and forward to error handler
