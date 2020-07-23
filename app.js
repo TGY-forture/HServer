@@ -9,6 +9,8 @@ var signRouter = require('./routes/sign');
 let logRouter = require('./routes/log')
 let searchRouter = require('./routes/search')
 let plusRouter = require('./routes/plus')
+let authorityRouter = require('./routes/authority')
+let recordRouter = require('./routes/record')
 
 var app = express();
 
@@ -36,6 +38,8 @@ app.use('/log', logRouter)
 app.use('/sign', signRouter)
 app.use('/search', searchRouter)
 app.use('/plus', plusRouter)
+app.use('/authority', authorityRouter)
+app.use('/record', recordRouter)
 
 
 // catch 404 and forward to error handler

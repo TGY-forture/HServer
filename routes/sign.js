@@ -1,5 +1,5 @@
 const express = require('express')
-const mysql = require('mysql')
+const createconn = require('../public/js/mysql').createConn
 let router = express.Router()
 
 router.get('/', function (req, res, next) {
@@ -12,14 +12,8 @@ router.get('/', function (req, res, next) {
 
 router.post('/', (req, res, next) => {
   let data = req.body
-  let connection = mysql.createConnection({
-    host: 'rm-2zeim991vtb92p54wao.mysql.rds.aliyuncs.com',
-    port: '3306',
-    user: 'tgy',
-    password: 'tgy12345',
-    database: 'fac'
-  })
-  let sql = `select username from usertab where username='${data.phone}'`
+  let connection = createconn()
+  let sql = `SELECT username FROM usertab WHERE username='${data.phone}'`
   new Promise((reslove, reject) => {
     connection.query(sql, (err, result, fields) => {
       if (!err && result.length > 0) {
@@ -30,16 +24,16 @@ router.post('/', (req, res, next) => {
     })
   }).then(
     () => {
-      sql = `insert into usertab (username,password,email,nickname) 
-             values ('${data.phone}','${data.password}','${data.email}','${data.nickname}')`
+      sql = `INSERT INTO usertab (username,password,email,nickname) 
+             VALUES ('${data.phone}','${data.password}','${data.email}','${data.nickname}')`
       connection.query(sql, function (err, result, fields) {
         if (!err) {
           res.send('success')
-          connection.end()
         } else {
-          res.end('false')
+          res.end('fail')
         }
       })
+      connection.end()
     }
   ).catch(
     val => {
