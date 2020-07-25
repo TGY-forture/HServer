@@ -11,6 +11,7 @@ let searchRouter = require('./routes/search')
 let plusRouter = require('./routes/plus')
 let authorityRouter = require('./routes/authority')
 let recordRouter = require('./routes/record')
+let userRouter = require('./routes/user')
 
 var app = express();
 
@@ -40,6 +41,7 @@ app.use('/search', searchRouter)
 app.use('/plus', plusRouter)
 app.use('/authority', authorityRouter)
 app.use('/record', recordRouter)
+app.use('/user', userRouter)
 
 
 // catch 404 and forward to error handler

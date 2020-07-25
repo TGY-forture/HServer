@@ -18,7 +18,7 @@ router.post('/', (req, res, next) => {
     connection.query(sql, (err, result, fields) => {
       if (!err && result.length > 0) {
         reject('same')
-      } else {
+      } else {   //默认不会出错,毕竟就一条查询语句而已 ^_^
         reslove()
       }
     })
