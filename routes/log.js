@@ -4,8 +4,8 @@ let router = express.Router()
 
 router.get('/', function (req, res, next) {
   let username = req.query.username
-  let conn = createconn()
   let sql = `SELECT * FROM usertab WHERE username='${username}'`
+  let conn = createconn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err) {
@@ -18,31 +18,43 @@ router.get('/', function (req, res, next) {
 
 router.post('/', (req, res, next) => {
   let data = req.body
-  let connection = createconn()
   let sql = `SELECT password,islog FROM usertab WHERE username='${data.username}'`
-  connection.query(sql,function(err, result, fields) {
-    if (!err) {
-      if (result.length === 0) {
-        res.send('empty')
-      } else if (result[0].islog === 'active') {
-        res.send('active')
-      } else if (data.password === result[0].password) {
-        sql = `UPDATE usertab SET islog='active' WHERE username='${data.username}'`
-        connection.query(sql, function (err, result, fields) {
-          if (!err) {
-            res.cookie('username', data.username)
-            res.cookie('remember', data.remember)
-            res.send('success')
-          }
-        })
+  let connection = createconn()
+  new Promise(function (resolve, reject) {
+    connection.query(sql, function (err, results, fields) {
+      if (!err) {
+        if (results.length === 0) {
+          connection.end()
+          reject('empty')
+        } else if (results[0].islog === 'active') {
+          reject('active')
+          connection.end()
+        } else if (data.password === results[0].password) {
+          resolve()
+        }
       } else {
-        res.end('fail')
+        console.log(err)
       }
-      connection.end()
-    } else {
-      console.log(err)
+    })
+  }).then(
+    () => {
+      sql = `UPDATE usertab SET islog='active' WHERE username='${data.username}'`
+      connection.query(sql, function (err, results, fields) {
+        connection.end()
+        if (!err) {
+          res.cookie('username', data.username)
+          res.cookie('remember', data.remember)
+          res.send('success')
+        } else {
+          console.log(err)
+        }
+      })
     }
-  })
+  ).catch(
+    (val) => {
+      res.send(val)
+    }
+  )
 })
 
 router.put('/', (req, res, next) => {
