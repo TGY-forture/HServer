@@ -6,7 +6,8 @@ function createConn() {
     port: '3306',
     user: 'tgy',
     password: 'tgy12345',
-    database: 'fac'
+    database: 'fac',
+    multipleStatements: true
   })
   connection.connect(function (err) {
     if (err) {

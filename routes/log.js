@@ -8,7 +8,7 @@ router.get('/', function (req, res, next) {
   let conn = createconn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
-    if (!err) {
+    if (!err && results.length > 0) {
       res.send(results[0])
     } else {
       res.send('fail')
@@ -18,11 +18,17 @@ router.get('/', function (req, res, next) {
 
 router.post('/', (req, res, next) => {
   let data = req.body
+  let expires = 0;
+  if (data.remember === true) {
+    expires = new Date()
+    expires.setDate(expires.getDate() + 30)
+  }
   let sql = `SELECT password,islog FROM usertab WHERE username='${data.username}'`
   let connection = createconn()
   new Promise(function (resolve, reject) {
     connection.query(sql, function (err, results, fields) {
       if (!err) {
+        console.log(results)
         if (results.length === 0) {
           connection.end()
           reject('empty')
@@ -31,6 +37,8 @@ router.post('/', (req, res, next) => {
           connection.end()
         } else if (data.password === results[0].password) {
           resolve()
+        } else {
+          reject('fail')
         }
       } else {
         console.log(err)
@@ -42,8 +50,7 @@ router.post('/', (req, res, next) => {
       connection.query(sql, function (err, results, fields) {
         connection.end()
         if (!err) {
-          res.cookie('username', data.username)
-          res.cookie('remember', data.remember)
+          res.cookie('username', data.username, {expires: data.remember ? expires : 0})
           res.send('success')
         } else {
           console.log(err)
@@ -65,7 +72,6 @@ router.put('/', (req, res, next) => {
     conn.end()
     if (!err) {
       res.clearCookie('username')
-      res.clearCookie('remember')
       res.send('ok')
     } else {
       res.send('fail')

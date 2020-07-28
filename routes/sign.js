@@ -26,7 +26,9 @@ router.post("/", (req, res, next) => {
   })
     .then(() => {
       sql = `INSERT INTO usertab (username,password,email,nickname) 
-             VALUES ('${data.phone}','${data.password}','${data.email}','${data.nickname}')`;
+             VALUES ('${data.phone}','${data.password}','${data.email}',
+             '${data.nickname}');
+             INSERT INTO picture (username) VALUES ('${data.phone}')`;
       connection.query(sql, function (err, results, fields) {
         connection.end();
         if (!err) {
