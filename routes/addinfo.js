@@ -61,4 +61,18 @@ router.put('/', (req, res, next) => {
   )
 })
 
+router.get('/part', (req, res, next) => {
+  let username = req.query.username 
+  let sql = `SELECT name,company FROM usertab WHERE username='${username}'`
+  let conn = createconn()
+  conn.query(sql, (err, results, fields) => {
+    conn.end()
+    if (!err && results.length > 0) {
+      res.send(results[0])
+    } else {
+      res.send('fail')
+    }
+  })
+})
+
 module.exports = router

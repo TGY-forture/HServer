@@ -28,7 +28,6 @@ router.post('/', (req, res, next) => {
   new Promise(function (resolve, reject) {
     connection.query(sql, function (err, results, fields) {
       if (!err) {
-        console.log(results)
         if (results.length === 0) {
           connection.end()
           reject('empty')
@@ -65,13 +64,19 @@ router.post('/', (req, res, next) => {
 })
 
 router.put('/', (req, res, next) => {
-  const username = req.body.username
+  let username;
+  let preuser = req.body.preuser
+  if (preuser) {
+    username = preuser
+  } else {
+    username = req.body.username
+    res.clearCookie('username')
+  }
   let sql = `UPDATE usertab SET islog='inactive' WHERE username='${username}'`
   let conn = createconn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err) {
-      res.clearCookie('username')
       res.send('ok')
     } else {
       res.send('fail')

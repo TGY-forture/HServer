@@ -1,12 +1,10 @@
 const express = require('express')
-const { createConn } = require('../public/js/mysql')
-const pool = require('../public/js/mysql').createPool()
-const creatconn = require('../public/js/mysql').createConn
+const { createConn, createPool } = require('../public/js/mysql')
 const router = express.Router()
 
 router.get('/', function (req, res, next) {
+  const pool = createPool()  //创建连接池
   const table = req.query.tablename
-  const seq = req.query.seq
   const totalprocess = req.query.totalprocess
   const company = req.query.company
   let arr = []
@@ -20,16 +18,16 @@ router.get('/', function (req, res, next) {
         conn.query(prosql, function (error, results, fields) {
           conn.release()
           if (!error) {
-            resolve(results[0])
+            resolve(results)
           } else {
-            reject()
+            reject('fail')
           }
         })
       }
     })
   })
   const item = new Promise((resolve, reject) => {
-    let itemsql = `SELECT * FROM ${table} WHERE seq='${seq}' AND id=1`
+    let itemsql = `SELECT * FROM ${table} WHERE id=1`
     pool.getConnection((err, conn) => {
       if (!err) {
         conn.query(itemsql, function (error, results, fields) {
@@ -37,7 +35,7 @@ router.get('/', function (req, res, next) {
           if (!error) {
             resolve(results[0])
           } else {
-            reject()
+            reject('fail')
           }
         })
       }
