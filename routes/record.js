@@ -18,7 +18,7 @@ router.get('/', function (req, res, next) {
         conn.query(prosql, function (error, results, fields) {
           conn.release()
           if (!error) {
-            resolve(results)
+            resolve(results) //两条记录,顺序排列不需判断
           } else {
             reject('fail')
           }
@@ -33,7 +33,7 @@ router.get('/', function (req, res, next) {
         conn.query(itemsql, function (error, results, fields) {
           conn.release()
           if (!error) {
-            resolve(results[0])
+            resolve(results[0])  //一条记录
           } else {
             reject('fail')
           }
@@ -68,30 +68,82 @@ router.get('/data', (req, res, next) => {
   })
 })
 
+router.get('/pronum', function (req, res, next) {
+  let seq = req.query.seq;
+  let table = req.query.tablename
+  let sql = `SELECT havedone FROM ${table} WHERE id>1 AND seq='${seq}'`;
+  let conn = createConn();
+  conn.query(sql, (err, results, fields) => {
+    conn.end();
+    if (!err && results.length > 0) {
+      res.send(results[0]);
+    } else {
+      res.send('fail')
+    }
+  })
+})
+
+router.delete('/', (req, res, next) => {
+  let company = req.query.company
+  let sql = `SELECT MAX(id) AS flag FROM stateflash WHERE company='${company}'`
+  let conn = createConn()
+  new Promise((resolve, reject) => {
+    conn.query(sql, (err, results, fields) => {
+      if (!err) {
+        resolve(results[0].flag)
+      } else {
+        reject('fail')
+      }
+    })
+  }).then(
+    (val) => {
+      sql = `DELETE FROM stateflash WHERE id=${val};ALTER TABLE stateflash AUTO_INCREMENT=1`
+      conn.query(sql, (err, results, fields) => {
+        conn.end()
+        if (!err) {
+          res.send('ok')
+        } else {
+          res.send('fail')
+        }
+      })
+    }
+  ).catch(
+    (err) => {
+      conn.end()
+      res.send(err)
+    }
+  )
+})
+
 router.put('/', (req, res, next) => {
   let seq = req.body.seq 
   let table = req.body.table
-  let sql = `INSERT INTO ${table} (seq) VALUES ('${seq}')`
+  let batch = req.body.batch;
+  let sql = `INSERT INTO ${table} (seq,havedone,batch) VALUES ('${seq}',0,'${batch}')`
   let conn = createConn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err) {
       res.send('ok')
     } else {
-      res.send('fali')
+      console.log(err)
+      res.send('fail')
     }
   })
 })
 
-router.post('/add', function (req, res, next) {
+router.post('/', function (req, res, next) {
   let items = req.body.values
   let state = req.body.stateval
   let table = state.table 
   let seq = state.seq 
   let tmparr = []
   for (let key in items) {
-    if (key !== 'process')
-    tmparr.push(`${key}='${items[key]}'`)
+    if (key !== 'process' && key !== 'havedone') {
+      tmparr.push(`${key}='${items[key]}'`)
+    } else if (key !== 'process' && key === 'havedone') {
+      tmparr.push(`${key}=${items[key]}`)
+    }
   }
   let sql = `UPDATE ${table} SET ${tmparr.join(',')} WHERE id>1 AND seq='${seq}'`
   let conn = createConn()
@@ -106,7 +158,8 @@ router.post('/add', function (req, res, next) {
   }).then(
     () => {
       sql = `INSERT INTO stateflash (seq,process,name,date,action,company) VALUES 
-            ('${state.seq}','${items.process.key}','${state.name}','${state.date}','${state.action}','${state.company}')`
+            ('${state.seq}','${items.process}','${state.name}','${state.date}',
+            '${state.action}','${state.company}')`
       conn.query(sql, (err, results, fields) => {
         conn.end();
         if (!err) {

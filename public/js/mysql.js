@@ -25,7 +25,8 @@ function createPool() {
     user: 'tgy',
     password: 'tgy12345',
     database: 'fac',
-    connectionLimit: 5
+    connectionLimit: 5,
+    multipleStatements: true
   })
   return pool
 }

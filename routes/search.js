@@ -1,31 +1,35 @@
 const express = require('express')
 const router = express.Router()
-const mysql = require('mysql')
+const { createConn } = require('../public/js/mysql')
 
-router.get('/', function (req, res, next) {
-  let query = req.query
-  let datesql = query.date ? `date='${query.date}'` : ``
-  let managersql = (query.manager && query.date) ? ` and manager='${query.manager}'`: (query.manager ? `manager='${query.manager}'` : ``)
-  let seqsql = ((query.date || query.manager) && query.seq) ? ` and seq='${query.seq}'`: (query.seq ? `seq='${query.seq}'` : ``)
-  let batchsql = ((query.date || query.manager || query.seq) && query.batch) ? ` and batch='${query.batch}'` : (query.batch ? `batch='${query.batch}'` : ``)
-  let sql = `select * from protab where ${datesql}${managersql}${seqsql}${batchsql}`
-
-  let connection = mysql.createConnection({
-    host: 'rm-2zeim991vtb92p54wao.mysql.rds.aliyuncs.com',
-    port: '3306',
-    user: 'tgy',
-    password: 'tgy12345',
-    database: 'fac'
-  })
-  
-  connection.query(sql, function (err, result, fields) {
+router.get('/', (req, res, next) => {
+  let sql = `SELECT company,proname,totalprocess,seq,batch,tablename FROM basicinfo`;
+  let conn = createConn();
+  conn.query(sql, (err, results, fields) => {
     if (!err) {
-      res.send(result)
-      connection.end()
+      res.send(results);
     } else {
-      console.log(err)
-      res.send('err')
+      res.send('fail')
     }
+    conn.end();
+  })
+})
+
+router.get('/data', (req, res, next) => {
+  let query = req.query;
+  let assitarray = [];
+  for (let key in query) {
+    assitarray.push(`${key}='${query[key]}'`)
+  }
+  let sql = `SELECT * FROM protab WHERE ${assitarray.join(' AND ')}`
+  let conn = createConn();
+  conn.query(sql, (err, results, fields) => {
+    if (!err) {
+      res.send(results)
+    } else {
+      res.send('fail')
+    }
+    conn.end();
   })
 })
 
