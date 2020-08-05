@@ -72,15 +72,38 @@ router.get('/', function(req, res, next) {
 
 router.post('/', (req, res, next) => {
   let body = req.body;
-  let sql = `INSERT INTO protab (seq,name,batch,date,company) VALUES ('${body.seq}','${body.name}','${body.batch}','${body.date}','${body.company}')`;
+  let sql = `SELECT seq FROM protab WHERE seq='${body.seq}'`;
   let conn = createConn();
-  conn.query(sql, (err, results, fields) => {
-    if (!err) {
-      res.send('ok')
-    } else {
-      res.send('fail')
+  new Promise((resolve, reject) => {
+    conn.query(sql, (err, results, fields) => {
+      if (!err && results.length === 0) {
+        resolve();
+      } else {
+        console.log(err)
+        reject('exist')
+      }
+    })
+  }).then(
+    () => {
+      sql = `INSERT INTO protab (seq,name,batch,date,company) VALUES 
+            ('${body.seq}','${body.name}','${body.batch}','${body.date}','${body.company}');
+            UPDATE protab SET batch=(SELECT batch FROM ship WHERE seq='${body.seq}');`;
+      conn.query(sql, (err, results, fields) => {
+        if (!err) {
+          res.send('ok')
+        } else {
+          res.send('fail')
+        }
+        conn.end();
+      })
     }
-  })
+  ).catch(
+    (err) => {
+      console.log(err);
+      res.send(err);
+      conn.end();
+    }
+  )
 })
 
 module.exports = router;

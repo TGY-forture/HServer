@@ -12,6 +12,7 @@ let plusRouter = require('./routes/plus')
 let recordRouter = require('./routes/record')
 let userRouter = require('./routes/user')
 let addinfoRouter = require('./routes/addinfo')
+let helpRouter = require('./routes/help')
 
 var app = express();
 
@@ -42,6 +43,7 @@ app.use('/plus', plusRouter)
 app.use('/record', recordRouter)
 app.use('/user', userRouter)
 app.use('/addinfo', addinfoRouter)
+app.use('/help', helpRouter)
 
 
 // catch 404 and forward to error handler

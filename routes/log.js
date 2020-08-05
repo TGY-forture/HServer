@@ -1,6 +1,8 @@
 const express = require('express')
 const createconn = require('../public/js/mysql').createConn
 let router = express.Router()
+const multer  = require('multer')
+const upload = multer()
 
 router.get('/', function (req, res, next) {
   let username = req.query.username
@@ -17,12 +19,9 @@ router.get('/', function (req, res, next) {
 })
 
 router.post('/', (req, res, next) => {
-  let data = req.body
-  let expires = 0;
-  if (data.remember === true) {
-    expires = new Date()
-    expires.setDate(expires.getDate() + 30)
-  }
+  let data = req.body;
+  let expires = new Date();
+  expires.setDate(expires.getDate() + 30);
   let sql = `SELECT password,islog FROM usertab WHERE username='${data.username}'`
   let connection = createconn()
   new Promise(function (resolve, reject) {
@@ -64,14 +63,7 @@ router.post('/', (req, res, next) => {
 })
 
 router.put('/', (req, res, next) => {
-  let username;
-  let preuser = req.body.preuser
-  if (preuser) {
-    username = preuser
-  } else {
-    username = req.body.username
-    res.clearCookie('username')
-  }
+  let username = req.body.username
   let sql = `UPDATE usertab SET islog='inactive' WHERE username='${username}'`
   let conn = createconn()
   conn.query(sql, (err, results, fields) => {
@@ -84,4 +76,52 @@ router.put('/', (req, res, next) => {
   })
 })
 
+//关闭页面,重置登录状态
+router.post('/logout', upload.none(), (req, res, next) => {
+  let username = req.body.username;
+  let sql = `UPDATE usertab SET islog='inactive' WHERE username='${username}'`;
+  let conn = createconn();
+  conn.query(sql, (err, results, fields) => {
+    if (!err) {
+      console.log('ok')
+    } else {
+      console.log('fail')
+    }
+    conn.end();
+  })
+  res.end(); 
+})
+
+router.put('/refresh', (req, res, next) => {
+  let username = req.body.username;
+  let sql = `SELECT islog FROM usertab WHERE username='${username}'`;
+  let conn = createconn();
+  new Promise((resolve, reject) => {
+    conn.query(sql, (err, results, fields) => {
+      if (!err) {
+        if (results[0].islog === 'active') {
+          reject();
+          conn.end();
+          res.end();
+        } else {
+          resolve();
+        }
+      }
+    })
+  }).then(
+    () => {
+      sql = `UPDATE usertab SET islog='active' WHERE username='${username}'`;
+      conn.query(sql, (err, results, fields) => {
+        if (!err) {
+          res.end();
+        }
+        conn.end();
+      })
+    }
+  ).catch(
+    (err) => {
+      console.log(err)
+    }
+  )
+})
 module.exports = router
