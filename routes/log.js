@@ -48,7 +48,7 @@ router.post('/', (req, res, next) => {
       connection.query(sql, function (err, results, fields) {
         connection.end()
         if (!err) {
-          res.cookie('username', data.username, {expires: data.remember ? expires : 0})
+          res.cookie('username', data.username, {expires: data.remember ? expires : 0, sameSite: 'None', secure: true})
           res.send('success')
         } else {
           console.log(err)
@@ -69,6 +69,7 @@ router.put('/', (req, res, next) => {
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err) {
+      res.clearCookie('username')
       res.send('ok')
     } else {
       res.send('fail')
