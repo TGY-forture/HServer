@@ -1,11 +1,11 @@
 const express = require('express')
 const router = express.Router()
-const createconn = require('../public/js/mysql').createConn
+const {createConn} = require('../public/js/mysql')
 
 router.get('/', function (req, res, next) {
   let table = req.query.tablename
   let seq = req.query.seq
-  let conn = createconn()
+  let conn = createConn()
   let sql = `SELECT * FROM ${table} WHERE seq='${seq}' AND id>1`
   conn.query(sql, (err, results, fields) => {
     if (!err && results.length > 0) {

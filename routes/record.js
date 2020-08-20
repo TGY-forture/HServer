@@ -12,7 +12,7 @@ router.get('/', function (req, res, next) {
     arr[i] = 'process' + (i + 1)
   }
   const pro = new Promise(function (resolve, reject) {
-    let prosql = `SELECT ${arr.toString()} FROM process_${totalprocess} WHERE company='${company}'`
+    let prosql = `SELECT ${arr.toString()} FROM process_${totalprocess} WHERE company='${company}'`;
     pool.getConnection((err, conn) => {
       if (!err) {
         conn.query(prosql, function (error, results, fields) {
@@ -48,7 +48,6 @@ router.get('/', function (req, res, next) {
   ).catch(
     (err) => {
       res.end()
-      console.log(err)
     }
   )
 })
@@ -56,7 +55,7 @@ router.get('/', function (req, res, next) {
 router.get('/data', (req, res, next) => {
   let seq = req.query.seq;
   let company = req.query.company
-  let sql = `SELECT * FROM stateflash WHERE seq='${seq}' AND company='${company}'`
+  let sql = `SELECT * FROM stateflash WHERE seq='${seq}' AND company='${company}'`;
   let conn = createConn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
@@ -114,7 +113,7 @@ router.delete('/', (req, res, next) => {
     }
   )
 })
-
+//新增时首先录入序列号和产品批次
 router.put('/', (req, res, next) => {
   let seq = req.body.seq 
   let table = req.body.table
@@ -126,7 +125,6 @@ router.put('/', (req, res, next) => {
     if (!err) {
       res.send('ok')
     } else {
-      console.log(err)
       res.send('fail')
     }
   })

@@ -1,10 +1,10 @@
 const express = require('express')
-const createconn = require('../public/js/mysql').createConn
+const {createConn} = require('../public/js/mysql')
 const router = express.Router()
 
 router.get('/', (req, res, next) => {
   let sql = `SELECT company FROM basicinfo`;
-  let conn = createconn()
+  let conn = createConn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err) {
@@ -18,7 +18,7 @@ router.get('/', (req, res, next) => {
 router.get('/all', (req, res, next) => {
   const company = req.query.company
   let sql = `SELECT * FROM basicinfo WHERE company='${company}'`;
-  let conn = createconn()
+  let conn = createConn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err && results.length > 0) {
@@ -32,7 +32,7 @@ router.get('/all', (req, res, next) => {
 router.put('/', (req, res, next) => {
   let data = req.body
   let sql = `SELECT workcode FROM basicinfo WHERE company='${data.company}'`
-  let connect = createconn()
+  let connect = createConn()
   new Promise((resolve, reject) => {
     connect.query(sql, function (err, results, fields) {
       if (!err && data.workcode === results[0].workcode) {
@@ -59,20 +59,6 @@ router.put('/', (req, res, next) => {
       res.send(val)
     }
   )
-})
-
-router.get('/part', (req, res, next) => {
-  let username = req.query.username 
-  let sql = `SELECT name,company FROM usertab WHERE username='${username}'`
-  let conn = createconn()
-  conn.query(sql, (err, results, fields) => {
-    conn.end()
-    if (!err && results.length > 0) {
-      res.send(results[0])
-    } else {
-      res.send('fail')
-    }
-  })
 })
 
 module.exports = router

@@ -1,13 +1,14 @@
 const express = require('express')
-const createconn = require('../public/js/mysql').createConn
-let router = express.Router()
-const multer  = require('multer')
-const upload = multer()
+const {createConn} = require('../public/js/mysql');
+let router = express.Router();
+const multer  = require('multer');
+const upload = multer();
+
 
 router.get('/', function (req, res, next) {
   let username = req.query.username
-  let sql = `SELECT * FROM usertab WHERE username='${username}'`
-  let conn = createconn()
+  let sql = `SELECT * FROM usertab WHERE username='${username}'`;
+  let conn = createConn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err && results.length > 0) {
@@ -17,46 +18,46 @@ router.get('/', function (req, res, next) {
     }
   })
 })
-
+//验证数据正确性，设置用户 cookie
 router.post('/', (req, res, next) => {
   let data = req.body;
   let expires = new Date();
   expires.setDate(expires.getDate() + 30);
-  let sql = `SELECT password,islog FROM usertab WHERE username='${data.username}'`
-  let connection = createconn()
+  let sql = `SELECT password,islog FROM usertab WHERE username='${data.username}'`;
+  let connection = createConn()
   new Promise(function (resolve, reject) {
     connection.query(sql, function (err, results, fields) {
       if (!err) {
-        if (results.length === 0) {
-          connection.end()
-          reject('empty')
-        } else if (results[0].islog === 'active') {
-          reject('active')
-          connection.end()
-        } else if (data.password === results[0].password) {
-          resolve()
-        } else {
-          reject('fail')
+        if (results.length === 0) {  //没有找到该账号信息
+          reject('empty');
+        } else if (results[0].islog === 'active') {  //用户已经登录
+          reject('active');
+        } else if (data.password === results[0].password) { //当前用户没有登录
+          resolve();
+        } else { //密码错误
+          reject('fail');
         }
-      } else {
-        console.log(err)
+      } else { 
+        reject('fail');
       }
     })
   }).then(
     () => {
-      sql = `UPDATE usertab SET islog='active' WHERE username='${data.username}'`
+      sql = `UPDATE usertab SET islog='active' WHERE username='${data.username}'`;
       connection.query(sql, function (err, results, fields) {
         connection.end()
         if (!err) {
-          res.cookie('username', data.username, {expires: data.remember ? expires : 0, sameSite: 'None', secure: true})
-          res.send('success')
+          // 设置 cookie, https传输
+          res.cookie('username', data.username, {expires: data.remember ? expires : 0, sameSite: 'None', secure: true});
+          res.send('success');
         } else {
-          console.log(err)
+          console.log(err);
         }
       })
     }
   ).catch(
     (val) => {
+      connection.end()
       res.send(val)
     }
   )
@@ -65,7 +66,7 @@ router.post('/', (req, res, next) => {
 router.put('/', (req, res, next) => {
   let username = req.body.username
   let sql = `UPDATE usertab SET islog='inactive' WHERE username='${username}'`
-  let conn = createconn()
+  let conn = createConn()
   conn.query(sql, (err, results, fields) => {
     conn.end()
     if (!err) {
@@ -81,7 +82,7 @@ router.put('/', (req, res, next) => {
 router.post('/logout', upload.none(), (req, res, next) => {
   let username = req.body.username;
   let sql = `UPDATE usertab SET islog='inactive' WHERE username='${username}'`;
-  let conn = createconn();
+  let conn = createConn();
   conn.query(sql, (err, results, fields) => {
     if (!err) {
       console.log('ok')
@@ -96,14 +97,12 @@ router.post('/logout', upload.none(), (req, res, next) => {
 router.put('/refresh', (req, res, next) => {
   let username = req.body.username;
   let sql = `SELECT islog FROM usertab WHERE username='${username}'`;
-  let conn = createconn();
+  let conn = createConn();
   new Promise((resolve, reject) => {
     conn.query(sql, (err, results, fields) => {
       if (!err) {
         if (results[0].islog === 'active') {
           reject();
-          conn.end();
-          res.end();
         } else {
           resolve();
         }
@@ -121,8 +120,13 @@ router.put('/refresh', (req, res, next) => {
     }
   ).catch(
     (err) => {
-      console.log(err)
+      conn.end();
+      res.end();
+      if (err) {
+        console.log(err)
+      }
     }
   )
 })
+
 module.exports = router

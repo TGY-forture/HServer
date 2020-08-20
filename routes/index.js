@@ -21,7 +21,7 @@ router.get('/', function(req, res, next) {
     })
   })
   const flow = new Promise((resolve, reject) => {
-    let sql = `SELECT tablename,totalprocess FROM basicinfo WHERE company='${query.company}'`
+    let sql = `SELECT tablename,totalprocess FROM basicinfo WHERE company='${query.company}'`;
     pool.getConnection(function (err, conn) {
       if (!err) {
         conn.query(sql, (error, results, fields) => {
@@ -64,7 +64,6 @@ router.get('/', function(req, res, next) {
     }
   ).catch(
     err => {
-      console.log(err);
       res.send('fail')
     }
   )
@@ -79,7 +78,6 @@ router.post('/', (req, res, next) => {
       if (!err && results.length === 0) {
         resolve();
       } else {
-        console.log(err)
         reject('exist')
       }
     })
@@ -99,7 +97,6 @@ router.post('/', (req, res, next) => {
     }
   ).catch(
     (err) => {
-      console.log(err);
       res.send(err);
       conn.end();
     }

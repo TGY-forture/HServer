@@ -4,7 +4,7 @@ let router = express.Router();
 
 router.get('/', (req, res, next) => {
   let data = req.query;
-  let sql = `SELECT password FROM usertab WHERE username='${data.username}' AND email='${data.email}'`
+  let sql = `SELECT password FROM usertab WHERE username='${data.username}' AND email='${data.email}'`;
   let conn = createConn();
   conn.query(sql, (err, results, fields) => {
     if (!err && results.length > 0) {

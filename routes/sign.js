@@ -1,18 +1,18 @@
 const express = require("express");
-const createconn = require("../public/js/mysql").createConn;
+const {createConn} = require("../public/js/mysql");
 let router = express.Router();
 
 router.get("/", function (req, res, next) { //可以做限流优化(浏览器端)
   let code;
   do {
     code = (Math.random() * 10000).toFixed();
-  } while (code.length != 4);
+  } while (code.length !== 4);
   res.json(code);
 });
 
 router.post("/", (req, res, next) => {
   let data = req.body;
-  let connection = createconn();
+  let connection = createConn();
   let sql = `SELECT username FROM usertab WHERE username='${data.phone}'`;
   new Promise((reslove, reject) => {
     connection.query(sql, (err, results, fields) => {
